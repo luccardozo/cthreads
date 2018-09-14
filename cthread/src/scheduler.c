@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ucontext.h>
 #include "../include/support.h"
@@ -28,10 +29,13 @@ int insertFilaPrioridades(FILAPRIO *filaPrioridades, int priority) {
     switch (priority) {
         case 0:
             AppendFila2(filaPrioridades->high, content);
+            break;
         case 1:
             AppendFila2(filaPrioridades->medium, content);
+            break;
         case 2:
             AppendFila2(filaPrioridades->low, content);
+            break;
         default:
             return -1;
 
