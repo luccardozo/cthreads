@@ -5,7 +5,7 @@
 
 #define FPRIO_STATE_CREATION 0
 #define FPRIO_STATE_READY 1
-#define FPRIO_STATE_EXECUTING 2
+#define FPRIO_STATE_RUNNING 2
 #define FPRIO_STATE_BLOCKED 3
 #define FPRIO_STATE_FINISHED 4
 
@@ -22,8 +22,19 @@ typedef struct FPrio {
 
 typedef struct FPrio * PFILAPRIO;
 
-void createFilaPrioridades(FILAPRIO *filaPrioridades);
+/**
+ *  Cria a fila de aptos
+ * */
+int createFilaPrioridades();
 
-int insertFilaPrioridades(FILAPRIO *filaPrioridades, int priority);
+/**
+ *  Insere contexto na fila de aptos e cria um tid
+ * */
+int insertFilaPrioridades(ucontext_t context, int priority);
+
+/**
+ * Cria uma fila comum (executando, bloqueado, terminado)
+ * */
+int initStdFila(PFILA2 fila);
 
 #endif
