@@ -14,9 +14,15 @@ int main() {
 
     content = findThread(0);
 
+    printf("\nFINDTHREAD - { tid = %d, state = %d, prio = %d, context = %p}\n", content->tid, content->state, content->prio, &content->context);
+
     content = findThread(1);
 
+    printf("\nFINDTHREAD - { tid = %d, state = %d, prio = %d, context = %p}\n", content->tid, content->state, content->prio, &content->context);
+
     content = findThread(2);
+
+    printf("\nFINDTHREAD - %p - deve ser NULL\n", content);
 
     return 0;
 }

@@ -10,7 +10,7 @@ PFILA2 running, blocked, finished; // Filas comuns para executando, bloqueados, 
 
 PFILAPRIO filaPrioridades; // Fila de prioridades para aptos
 
-unsigned int tid = 0; // ID de threads
+int tid = 0; // ID de threads
 
 ucontext_t mainThreadContext; // Utilizado para ir e voltar para main thread
 
@@ -30,7 +30,7 @@ int initMainThread() {
 
     if (content != NULL) {
         insertFilaPrioridades(content);
-        chooseReadyThread();
+        chooseAndRunReadyThread();
         return 0;
     } else {
         return -1;
@@ -39,7 +39,7 @@ int initMainThread() {
 }
 
 
-int chooseReadyThread(){
+int chooseAndRunReadyThread(){
     TCB_t * content = malloc(sizeof(TCB_t));
     TCB_t * runningContent = malloc(sizeof(TCB_t));
 
@@ -48,26 +48,26 @@ int chooseReadyThread(){
         runningContent = (TCB_t*)GetAtIteratorFila2(running);
 
         if (!isEmptyFila(filaPrioridades->high) && runningContent->prio != FPRIO_PRIORITY_HIGH){
-            content = getAndDeleteFirstFila(filaPrioridades->high);
+            content = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
             runThread(content);
             return 0;
         } else if (!isEmptyFila(filaPrioridades->medium) && (runningContent->prio != FPRIO_PRIORITY_MEDIUM || runningContent->prio != FPRIO_PRIORITY_HIGH)) {
-            content = getAndDeleteFirstFila(filaPrioridades->medium);
+            content = getAtFilaPrioridades(FPRIO_PRIORITY_MEDIUM);
             runThread(content);
             return 0;
         }
         return 0;
     } else {
         if (!isEmptyFila(filaPrioridades->high)){
-            content = getAndDeleteFirstFila(filaPrioridades->high);
+            content = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
             runThread(content);
             return 0;
         } else if (!isEmptyFila(filaPrioridades->medium)) {
-            content = getAndDeleteFirstFila(filaPrioridades->medium);
+            content = getAtFilaPrioridades(FPRIO_PRIORITY_MEDIUM);
             runThread(content);
             return 0;
         } else if (!isEmptyFila(filaPrioridades->low)) {
-            content = getAndDeleteFirstFila(filaPrioridades->low);
+            content = getAtFilaPrioridades(FPRIO_PRIORITY_LOW);
             runThread(content);
             return 0;
         } else {
@@ -90,7 +90,7 @@ int isEmptyFila(PFILA2 fila) {
 
 // TODO: Rodar a thread, alem de colocar na fila de running
 int runThread(TCB_t * content) {
-    int state = STATE_RUNNING;
+    int state = PROCST_EXEC;
     content->state = state;
     AppendFila2(running, content);
     return 0;
@@ -115,7 +115,7 @@ int createFilaPrioridades() {
 }
 
 TCB_t *createThread(ucontext_t context, int priority) {
-    int state = STATE_CREATION;
+    int state = PROCST_CRIACAO;
 
     TCB_t * content = malloc(sizeof(TCB_t));
     *content = (TCB_t) {.tid = tid, .state = state, .prio = priority, .context = context};
@@ -126,6 +126,7 @@ TCB_t *createThread(ucontext_t context, int priority) {
 
 TCB_t *findThread(int tid) {
     TCB_t * content = malloc(sizeof(TCB_t));
+    content->tid = -1; // tid impossivel, para fazer comparacoes
 
     searchForThreadInside(running, &content, tid);
     searchForThreadInside(filaPrioridades->high, &content, tid);
@@ -160,7 +161,7 @@ void searchForThreadInside(PFILA2 fila, TCB_t ** content, int tid) {
 
 
 int insertFilaPrioridades(TCB_t * content) {
-    int state = STATE_READY;
+    int state = PROCST_APTO;
 
     content->state = state;
     
