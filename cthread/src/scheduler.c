@@ -14,10 +14,14 @@ unsigned int tid = 0; // ID de threads
 
 ucontext_t mainThreadContext; // Utilizado para ir e voltar para main thread
 
+
 int initMainThread() {
     TCB_t * content = malloc(sizeof(TCB_t));
 
+    initStdFila(&blocked);
     initStdFila(&running);
+    initStdFila(&finished);
+
     createFilaPrioridades();
 
     getcontext(&mainThreadContext);
@@ -31,7 +35,6 @@ int initMainThread() {
     } else {
         return -1;
     }
-
 
 }
 
@@ -119,6 +122,40 @@ TCB_t *createThread(ucontext_t context, int priority) {
     tid += 1;
     return content;
 
+}
+
+TCB_t *findThread(int tid) {
+    TCB_t * content = malloc(sizeof(TCB_t));
+
+    searchForThreadInside(running, &content, tid);
+    searchForThreadInside(filaPrioridades->high, &content, tid);
+    searchForThreadInside(filaPrioridades->medium, &content, tid);
+    searchForThreadInside(filaPrioridades->low, &content, tid);
+    searchForThreadInside(blocked, &content, tid);
+    searchForThreadInside(finished, &content, tid);
+
+    if(content->tid == tid){
+        return content;
+    } else {
+        return NULL;
+    }
+    
+}
+
+void searchForThreadInside(PFILA2 fila, TCB_t ** content, int tid) {
+    TCB_t * searchContent = malloc(sizeof(TCB_t));
+
+    FirstFila2(fila);
+    while (GetAtIteratorFila2(fila) != NULL && (*content)->tid != tid) {
+        searchContent = (TCB_t*)GetAtIteratorFila2(fila);
+        NextFila2(fila);
+
+        if(searchContent->tid == tid){
+            *content = searchContent;
+        }
+    }
+
+    return;
 }
 
 

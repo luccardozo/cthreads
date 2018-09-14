@@ -38,6 +38,10 @@ int createFilaPrioridades();
 
 TCB_t *createThread(ucontext_t context, int priority);
 
+TCB_t *findThread(int tid);
+
+void searchForThreadInside(PFILA2 fila, TCB_t ** content, int tid);
+
 /**
  *  Insere contexto na fila de aptos e cria um tid
  * */
