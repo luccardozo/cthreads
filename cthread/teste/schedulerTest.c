@@ -3,12 +3,7 @@
 #include "../include/scheduler.h"
 
 int main() {
-    ucontext_t context;
-    getcontext(&context);
-    createFilaPrioridades();
-    
-
-    insertFilaPrioridades(context, 0);
+    initMainThread();
 
     return 0;
 }
