@@ -6,7 +6,7 @@
 #include "../include/scheduler.h"
 #include "../include/cdata.h"
 
-PFILA2 running, blocked, finished, creating; // Filas comuns para executando, bloqueados, terminados e criando
+PFILA2 running, blocked, finished; // Filas comuns para executando, bloqueados, terminados
 
 PFILAPRIO filaPrioridades; // Fila de prioridades para aptos
 
@@ -17,19 +17,16 @@ ucontext_t mainThreadContext; // Utilizado para ir e voltar para main thread
 int initMainThread() {
     TCB_t * content = malloc(sizeof(TCB_t));
 
-    initStdFila(&creating);
     initStdFila(&running);
     createFilaPrioridades();
 
     getcontext(&mainThreadContext);
 
-    createThread(mainThreadContext);
-
-    content = getAndDeleteLastFila(creating);
+    content = createThread(mainThreadContext, FPRIO_PRIORITY_LOW);
 
     if (content != NULL) {
-        insertFilaPrioridades(content, FPRIO_PRIORITY_LOW);
-
+        insertFilaPrioridades(content);
+        chooseReadyThread();
         return 0;
     } else {
         return -1;
@@ -39,19 +36,62 @@ int initMainThread() {
 }
 
 
-/*
-int chooseThread(){
-    if(){
+int chooseReadyThread(){
+    TCB_t * content = malloc(sizeof(TCB_t));
+    TCB_t * runningContent = malloc(sizeof(TCB_t));
 
+    if(!isEmptyFila(running)) {
+        FirstFila2(running);
+        runningContent = (TCB_t*)GetAtIteratorFila2(running);
+
+        if (!isEmptyFila(filaPrioridades->high) && runningContent->prio != FPRIO_PRIORITY_HIGH){
+            content = getAndDeleteFirstFila(filaPrioridades->high);
+            runThread(content);
+            return 0;
+        } else if (!isEmptyFila(filaPrioridades->medium) && (runningContent->prio != FPRIO_PRIORITY_MEDIUM || runningContent->prio != FPRIO_PRIORITY_HIGH)) {
+            content = getAndDeleteFirstFila(filaPrioridades->medium);
+            runThread(content);
+            return 0;
+        }
+        return 0;
+    } else {
+        if (!isEmptyFila(filaPrioridades->high)){
+            content = getAndDeleteFirstFila(filaPrioridades->high);
+            runThread(content);
+            return 0;
+        } else if (!isEmptyFila(filaPrioridades->medium)) {
+            content = getAndDeleteFirstFila(filaPrioridades->medium);
+            runThread(content);
+            return 0;
+        } else if (!isEmptyFila(filaPrioridades->low)) {
+            content = getAndDeleteFirstFila(filaPrioridades->low);
+            runThread(content);
+            return 0;
+        } else {
+            return -1;
+        }
     }
 }
 
+int isEmptyFila(PFILA2 fila) {
+    void * content;
+    FirstFila2(fila);
+    content = GetAtIteratorFila2(fila);
+
+    if (content == NULL) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// TODO: Rodar a thread, alem de colocar na fila de running
 int runThread(TCB_t * content) {
     int state = STATE_RUNNING;
-
-
+    content->state = state;
+    AppendFila2(running, content);
+    return 0;
 }
-*/
 
 int createFilaPrioridades() {
     filaPrioridades = malloc(sizeof(PFILAPRIO));
@@ -71,26 +111,23 @@ int createFilaPrioridades() {
     return 0;
 }
 
-int createThread(ucontext_t context) {
+TCB_t *createThread(ucontext_t context, int priority) {
     int state = STATE_CREATION;
-    int priority = 0;
 
     TCB_t * content = malloc(sizeof(TCB_t));
     *content = (TCB_t) {.tid = tid, .state = state, .prio = priority, .context = context};
-    AppendFila2(creating, content);
     tid += 1;
-    return 0;
-
+    return content;
 
 }
 
 
-int insertFilaPrioridades(TCB_t * content, int priority) {
+int insertFilaPrioridades(TCB_t * content) {
     int state = STATE_READY;
 
     content->state = state;
     
-    switch (priority) {
+    switch (content->prio) {
         case FPRIO_PRIORITY_HIGH:
             AppendFila2(filaPrioridades->high, content);
             break;
@@ -112,13 +149,13 @@ TCB_t *getAtFilaPrioridades(int priority) {
     TCB_t * content = malloc(sizeof(TCB_t));
     switch (priority) {
         case FPRIO_PRIORITY_HIGH:
-            content = getAndDeleteLastFila(filaPrioridades->high);
+            content = getAndDeleteFirstFila(filaPrioridades->high);
             break;
         case FPRIO_PRIORITY_MEDIUM:
-            content = getAndDeleteLastFila(filaPrioridades->medium);
+            content = getAndDeleteFirstFila(filaPrioridades->medium);
             break;
         case FPRIO_PRIORITY_LOW:
-            content = getAndDeleteLastFila(filaPrioridades->low);
+            content = getAndDeleteFirstFila(filaPrioridades->low);
             break;
         default:
             return NULL;
@@ -127,9 +164,9 @@ TCB_t *getAtFilaPrioridades(int priority) {
     return content;
 }
 
-TCB_t *getAndDeleteLastFila(PFILA2 fila) {
+TCB_t *getAndDeleteFirstFila(PFILA2 fila) {
     TCB_t * content = malloc(sizeof(TCB_t));
-    LastFila2(fila);
+    FirstFila2(fila);
     content = (TCB_t*)GetAtIteratorFila2(fila);
     DeleteAtIteratorFila2(fila);
     return content;

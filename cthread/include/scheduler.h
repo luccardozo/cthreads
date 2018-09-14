@@ -25,21 +25,27 @@ typedef struct FPrio * PFILAPRIO;
 
 int initMainThread();
 
+int chooseReadyThread();
+
+int isEmptyFila(PFILA2 fila);
+
+int runThread(TCB_t * content);
+
 /**
  *  Cria a fila de aptos
  * */
 int createFilaPrioridades();
 
-int createThread(ucontext_t context);
+TCB_t *createThread(ucontext_t context, int priority);
 
 /**
  *  Insere contexto na fila de aptos e cria um tid
  * */
-int insertFilaPrioridades(TCB_t * content, int priority);
+int insertFilaPrioridades(TCB_t * content);
 
 TCB_t *getAtFilaPrioridades(int priority);
 
-TCB_t *getAndDeleteLastFila(PFILA2 fila);
+TCB_t *getAndDeleteFirstFila(PFILA2 fila);
 
 /**
  * Cria uma fila comum (executando, bloqueado, terminado)
