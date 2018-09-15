@@ -1,1 +1,0 @@
-gcc -o threadTest threadTest.c ../src/thread.c ../src/scheduler.c ../src/lib.c ../bin/support.o -Wall -ggdb && ./sch threadTes
