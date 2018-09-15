@@ -7,7 +7,6 @@
 #include "../include/cdata.h"
 #include "../include/thread.h"
 #include "../include/cthread.h"
-#include "../include/cdata.h"
 
 #define STACK_SIZE 1024*32
 
