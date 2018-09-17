@@ -27,8 +27,9 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
 	/*Criação do TCB*/
 	TCB_t *newThread = malloc(sizeof(TCB_t));
-	newThread = createThread(*newThreadContext, prio);
-
+	//newThread = createThread(*newThreadContext, prio);
+	createThreadTest(newThread, newThreadContext, prio);
+	newThread->state = PROCST_APTO;
 	insertFilaPrioridades(newThread);
 	return newThread->tid;
 }

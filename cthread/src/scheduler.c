@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+//#include <cdata.h>
 #include <ucontext.h>
+//#include <thread.h>
 #include "../include/support.h"
 #include "../include/scheduler.h"
 #include "../include/cdata.h"
 
-PFILA2 running, blocked, finished; // Filas comuns para executando, bloqueados, terminados
+PFILA2 running, blocked, finished, joints; // Filas comuns para executando, bloqueados, terminados
 
 PFILAPRIO filaPrioridades; // Fila de prioridades para aptos
 
 int tid = 0; // ID de threads
 
 ucontext_t mainThreadContext; // Utilizado para ir e voltar para main thread
+
 
 
 int initMainThread() {
@@ -27,9 +30,10 @@ int initMainThread() {
     getcontext(&mainThreadContext);
 
     content = createThread(mainThreadContext, FPRIO_PRIORITY_LOW);
-
+    
     if (content != NULL) {
         insertFilaPrioridades(content);
+        AppendFila2(running, content);
         chooseAndRunReadyThread();
         return 0;
     } else {
@@ -38,12 +42,12 @@ int initMainThread() {
 
 }
 
-
 int chooseAndRunReadyThread(){
     TCB_t * content = malloc(sizeof(TCB_t));
     TCB_t * runningContent = malloc(sizeof(TCB_t));
 
     if(!isEmptyFila(running)) {
+        printf("Não ta vazia! Retorno: %d\n\n", isEmptyFila(running));
         FirstFila2(running);
         runningContent = (TCB_t*)GetAtIteratorFila2(running);
 
@@ -58,6 +62,7 @@ int chooseAndRunReadyThread(){
         }
         return 0;
     } else {
+        printf("Ta vazia!\n\n");
         if (!isEmptyFila(filaPrioridades->high)){
             content = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
             runThread(content);
@@ -93,6 +98,7 @@ int runThread(TCB_t * content) {
     int state = PROCST_EXEC;
     content->state = state;
     AppendFila2(running, content);
+    setcontext(&(content->context));//roda a thread
     return 0;
 }
 
@@ -122,6 +128,14 @@ TCB_t *createThread(ucontext_t context, int priority) {
     tid += 1;
     return content;
 
+}
+void createThreadTest(TCB_t * thread, ucontext_t * context, int priority){
+    int state = PROCST_CRIACAO;
+    thread->state = state;
+    thread-> tid = tid;
+    thread->prio = priority;
+    thread->context = *context;
+    tid +=1;
 }
 
 TCB_t *findThread(int tid) {
@@ -221,3 +235,9 @@ int initStdFila(PFILA2 * fila) {
     
 }
 
+void finishThread(){
+    TCB_t * thread = (TCB_t*)GetAtIteratorFila2(running); //Pega a thread da fila de execução
+    DeleteAtIteratorFila2(running); //Remove a thread da fila de execução
+    AppendFila2(finished, thread); //Coloca a thread na fila de terminados
+    chooseAndRunReadyThread(); //Executa uma nova thread.
+}

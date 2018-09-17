@@ -7,12 +7,21 @@
 #define FPRIO_PRIORITY_MEDIUM 1
 #define FPRIO_PRIORITY_LOW 2
 
+ucontext_t scheduler;
+char ss_scheduler[1024*32];
+
 // Fila de prioridades
 typedef struct FPrio {
     PFILA2 high;
     PFILA2 medium;
     PFILA2 low;
 } FILAPRIO;
+
+/*Estrutura para a fila de JOINS, para a função CJOINS*/
+typedef struct joins{
+    int pid_thread;
+    int pid_threadWaiting;
+} joint;
 
 typedef struct FPrio * PFILAPRIO;
 
@@ -74,8 +83,16 @@ TCB_t *getAtFilaPrioridades(int priority);
 TCB_t *getAndDeleteFirstFila(PFILA2 fila);
 
 /**
- * Cria uma fila comum (executando, bloqueado, terminado)
- * */
+* Cria uma fila comum (executando, bloqueado, terminado)
+*/
 int initStdFila(PFILA2 * fila);
+/*
+* Remove a thread da fila running e roda novamente a chose
+*/
+void finishThread();
+/*
+*Função secundaria de Create Thread; teste
+*/
+void createThreadTest(TCB_t * thread, ucontext_t * context, int priority);
 
 #endif
