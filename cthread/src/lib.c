@@ -28,8 +28,9 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 	/*Criação do TCB*/
 	TCB_t *newThread = malloc(sizeof(TCB_t));
 	newThread = createThread(*newThreadContext, prio);
-
+	//createThreadTest(newThread, newThreadContext, prio);
 	insertFilaPrioridades(newThread);
+	creationYield();
 	return newThread->tid;
 }
 
@@ -38,7 +39,7 @@ int csetprio(int tid, int prio) {
 }
 
 int cyield(void) {
-	return -1;
+	return yield();
 }
 
 int cjoin(int tid) {

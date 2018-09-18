@@ -9,12 +9,7 @@
 
 #define SUCCESS 0
 #define ERROR -1
-
-/*Estrutura para a fila de JOINS, para a função CJOINS*/
-typedef struct joins{
-    int pid_thread;
-    int pid_threadWaiting;
-} joint;
+#define STACK_SIZE 1024*32
 
 void createContext(ucontext_t * context, void* (*start)(void*));
 //int allocExitContext();
