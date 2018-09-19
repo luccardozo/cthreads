@@ -14,7 +14,7 @@ void function6();
 
 int main(){
 
-    printf("Començando o programa\n\n");
+    printf("Começando o programa\n\n");
     int thread1 = ccreate((void*)&function1, 0, FPRIO_PRIORITY_MEDIUM);
     int thread2 = ccreate((void*)&function2, 0, FPRIO_PRIORITY_HIGH);
     int thread3 = ccreate((void*)&function3, 0, FPRIO_PRIORITY_MEDIUM);
@@ -36,12 +36,22 @@ int main(){
 void function1(){
     
     printf("Sou a função 1\n");
-    int thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_HIGH);
+    int thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_MEDIUM);
     printf("Tid thread 5: %d \n", thread5);
+
+    printf("Fazendo Yield antes de imprimir, funcao 5 deve rodar\n");
+
+    cyield();
+
+    printf("Apos Yield, de volta a funcao 1\n");
     
 }
 void function5(){
     printf("Sou a funcao 5, dentro da 1\n");
+    printf("Settar prioridade para baixa, funcao 1 deve voltar\n");
+    csetprio(0,FPRIO_PRIORITY_LOW);
+    printf("De volta a funcao 5, agora com prioridade baixa\n");
+
     int thread6 = ccreate((void*)&function6, 0, FPRIO_PRIORITY_LOW);
     printf("Tid thread 6: %d \n", thread6);
 }

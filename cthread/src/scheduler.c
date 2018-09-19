@@ -107,14 +107,6 @@ TCB_t *createThread(ucontext_t context, int priority) {
     return thread;
 
 }
-void createThreadTest(TCB_t * thread, ucontext_t * context, int priority){
-    int state = PROCST_CRIACAO;
-    thread->state = state;
-    thread-> tid = tid;
-    thread->prio = priority;
-    thread->context = *context;
-    tid +=1;
-}
 
 TCB_t *findThread(int tid) {
     TCB_t * thread = malloc(sizeof(TCB_t));
@@ -213,28 +205,52 @@ int initStdFila(PFILA2 * fila) {
     
 }
 
-int creationYield() {
+int priorityYield() {
     TCB_t * thread =  malloc(sizeof(TCB_t));
+    int hasYielded = 0;
     FirstFila2(running);
     thread = (TCB_t*)GetAtIteratorFila2(running);
 
     // Salva o contexto da thread rodando, para quando retornar, continuar de onde parou
     getcontext(&(thread->context));
 
-    if (thread->prio == FPRIO_PRIORITY_HIGH) {
-        return 0;
-    } else if (thread->prio == FPRIO_PRIORITY_MEDIUM && !isEmptyFila(filaPrioridades->high)) {
-        return yield();
-    } else if (thread->prio == FPRIO_PRIORITY_LOW && (!isEmptyFila(filaPrioridades->high) ||  !isEmptyFila(filaPrioridades->medium))) {
-        return yield();
-    } else {
-        return 0;
+    if (!hasYielded) {
+        hasYielded = 1;
+        if (thread->prio == FPRIO_PRIORITY_HIGH) {
+            return 0;
+        } else if (thread->prio == FPRIO_PRIORITY_MEDIUM && !isEmptyFila(filaPrioridades->high)) {
+            return yield();
+        } else if (thread->prio == FPRIO_PRIORITY_LOW && (!isEmptyFila(filaPrioridades->high) ||  !isEmptyFila(filaPrioridades->medium))) {
+            return yield();
+        } else {
+            return 0;
+        }
     }
+    return 0;
     
+}
+
+int prepareYield() {
+    TCB_t * thread =  malloc(sizeof(TCB_t));
+    int hasYielded = 0;
+
+    FirstFila2(running);
+    thread = (TCB_t*)GetAtIteratorFila2(running);
+
+    getcontext(&(thread->context));
+
+    if (!hasYielded) {
+        hasYielded = 1;
+        return yield();
+    }
+    return 0;
 }
 
 int yield() {
     TCB_t * thread = getAndDeleteFirstFila(running); //Pega a thread da fila de execução
+    if (thread == NULL) {
+        return -1;
+    }
     insertFilaPrioridades(thread);
     chooseAndRunReadyThread();
     return 0;
@@ -245,4 +261,15 @@ void finishThread(){
     thread->state = PROCST_TERMINO;
     AppendFila2(finished, thread); //Coloca a thread na fila de terminados
     chooseAndRunReadyThread(); //Executa uma nova thread.
+}
+
+int setRunningThreadPriority(int priority) {
+    TCB_t * thread = getAndDeleteFirstFila(running); //Pega a thread da fila de execução
+    if (thread == NULL) {
+        return -1;
+    } else {
+        thread->prio = priority;
+        AppendFila2(running, thread);
+        return 0;
+    }
 }
