@@ -34,8 +34,9 @@ int main(){
 }
 
 void function1(){
-    int thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_MEDIUM);
+    
     printf("Sou a função 1\n");
+    int thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_HIGH);
     printf("Tid thread 5: %d \n", thread5);
     
 }
