@@ -28,7 +28,6 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 	/*Criação do TCB*/
 	TCB_t *newThread = malloc(sizeof(TCB_t));
 	newThread = createThread(*newThreadContext, prio);
-	//createThreadTest(newThread, newThreadContext, prio);
 	insertFilaPrioridades(newThread);
 	priorityYield();
 	return newThread->tid;
@@ -39,12 +38,12 @@ int csetprio(int tid, int prio) {
 		has_init_cthreads = 1;
 		initMainThread();
 	}
-	if (prio != FPRIO_PRIORITY_HIGH && prio != FPRIO_PRIORITY_MEDIUM && prio != FPRIO_PRIORITY_LOW) {
-		return -1;
-	} else {
+	if (prio == FPRIO_PRIORITY_HIGH || prio == FPRIO_PRIORITY_MEDIUM || prio == FPRIO_PRIORITY_LOW) {
 		setRunningThreadPriority(prio);
 		priorityYield();
 		return 0;
+	} else { // Se nao e uma das prioridades estipuladas, retorna com erro
+		return -1;
 	}
 }
 

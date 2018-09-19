@@ -104,9 +104,4 @@ int setRunningThreadPriority(int priority);
 */
 void finishThread();
 
-/*
-*Função secundaria de Create Thread; teste
-*/
-void createThreadTest(TCB_t * thread, ucontext_t * context, int priority);
-
 #endif

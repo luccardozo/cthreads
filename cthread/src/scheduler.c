@@ -107,14 +107,6 @@ TCB_t *createThread(ucontext_t context, int priority) {
     return thread;
 
 }
-void createThreadTest(TCB_t * thread, ucontext_t * context, int priority){
-    int state = PROCST_CRIACAO;
-    thread->state = state;
-    thread-> tid = tid;
-    thread->prio = priority;
-    thread->context = *context;
-    tid +=1;
-}
 
 TCB_t *findThread(int tid) {
     TCB_t * thread = malloc(sizeof(TCB_t));
