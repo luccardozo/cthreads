@@ -42,40 +42,21 @@ int initMainThread() {
 
 int chooseAndRunReadyThread(){
     TCB_t * thread = malloc(sizeof(TCB_t));
-    TCB_t * runningThread = malloc(sizeof(TCB_t));
 
-    if(!isEmptyFila(running)) {
-        printf("Não ta vazia! Retorno: %d\n\n", isEmptyFila(running));
-        FirstFila2(running);
-        runningThread = (TCB_t*)GetAtIteratorFila2(running);
-
-        if (!isEmptyFila(filaPrioridades->high) && runningThread->prio != FPRIO_PRIORITY_HIGH){
-            thread = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
-            runThread(thread);
-            return 0;
-        } else if (!isEmptyFila(filaPrioridades->medium) && (runningThread->prio != FPRIO_PRIORITY_MEDIUM || runningThread->prio != FPRIO_PRIORITY_HIGH)) {
-            thread = getAtFilaPrioridades(FPRIO_PRIORITY_MEDIUM);
-            runThread(thread);
-            return 0;
-        }
+    if (!isEmptyFila(filaPrioridades->high)){
+        thread = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
+        runThread(thread);
+        return 0;
+    } else if (!isEmptyFila(filaPrioridades->medium)) {
+        thread = getAtFilaPrioridades(FPRIO_PRIORITY_MEDIUM);
+        runThread(thread);
+        return 0;
+    } else if (!isEmptyFila(filaPrioridades->low)) {
+        thread = getAtFilaPrioridades(FPRIO_PRIORITY_LOW);
+        runThread(thread);
         return 0;
     } else {
-        printf("Ta vazia!\n\n");
-        if (!isEmptyFila(filaPrioridades->high)){
-            thread = getAtFilaPrioridades(FPRIO_PRIORITY_HIGH);
-            runThread(thread);
-            return 0;
-        } else if (!isEmptyFila(filaPrioridades->medium)) {
-            thread = getAtFilaPrioridades(FPRIO_PRIORITY_MEDIUM);
-            runThread(thread);
-            return 0;
-        } else if (!isEmptyFila(filaPrioridades->low)) {
-            thread = getAtFilaPrioridades(FPRIO_PRIORITY_LOW);
-            runThread(thread);
-            return 0;
-        } else {
-            return -1;
-        }
+        return -1;
     }
 }
 
@@ -237,9 +218,8 @@ int creationYield() {
     FirstFila2(running);
     thread = (TCB_t*)GetAtIteratorFila2(running);
 
-    if(thread->tid == 0) { // Salva o contexto da main para voltar aqui quando as outras com maior prioridade acabarem
-        getcontext(&(mainThreadTCB->context));
-    }
+    // Salva o contexto da thread rodando, para quando retornar, continuar de onde parou
+    getcontext(&(thread->context));
 
     if (thread->prio == FPRIO_PRIORITY_HIGH) {
         return 0;
