@@ -15,7 +15,7 @@ int has_init_cthreads = 0;//flag
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
 /*inicializa a main thread caso n tenha sido inicializada ainda*/
-	if(!has_init_cthreads){
+	if (!has_init_cthreads) {
 		has_init_cthreads = 1;
 		initMainThread();
 	}
@@ -30,16 +30,30 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 	newThread = createThread(*newThreadContext, prio);
 	//createThreadTest(newThread, newThreadContext, prio);
 	insertFilaPrioridades(newThread);
-	creationYield();
+	priorityYield();
 	return newThread->tid;
 }
 
 int csetprio(int tid, int prio) {
-	return -1;
+	if (!has_init_cthreads) {
+		has_init_cthreads = 1;
+		initMainThread();
+	}
+	if (prio != FPRIO_PRIORITY_HIGH && prio != FPRIO_PRIORITY_MEDIUM && prio != FPRIO_PRIORITY_LOW) {
+		return -1;
+	} else {
+		setRunningThreadPriority(prio);
+		priorityYield();
+		return 0;
+	}
 }
 
 int cyield(void) {
-	return yield();
+	if (!has_init_cthreads) {
+		has_init_cthreads = 1;
+		initMainThread();
+	}
+	return prepareYield();
 }
 
 int cjoin(int tid) {

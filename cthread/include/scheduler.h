@@ -91,9 +91,13 @@ TCB_t *getAndDeleteFirstFila(PFILA2 fila);
 */
 int initStdFila(PFILA2 * fila);
 
-int creationYield();
+int priorityYield();
+
+int prepareYield();
 
 int yield();
+
+int setRunningThreadPriority(int priority);
 
 /*
 * Remove a thread da fila running e roda novamente a chose
