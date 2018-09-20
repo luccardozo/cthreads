@@ -56,6 +56,7 @@ int cyield(void) {
 }
 
 int cjoin(int tid) {
+	blockedForThread(tid);
 	return -1;
 }
 

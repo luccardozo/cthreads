@@ -48,7 +48,7 @@ void function1(){
 }
 void function5(){
     printf("Sou a funcao 5, dentro da 1\n");
-    printf("Settar prioridade para baixa, funcao 1 deve voltar\n");
+    printf("Setar prioridade para baixa, funcao 1 deve voltar\n");
     csetprio(0,FPRIO_PRIORITY_LOW);
     printf("De volta a funcao 5, agora com prioridade baixa\n");
 

@@ -17,10 +17,12 @@ typedef struct FPrio {
     PFILA2 low;
 } FILAPRIO;
 
-/*Estrutura para a fila de JOINS, para a função CJOINS*/
+/*
+Estrutura para a fila de JOINS, para a função CJOINS
+*/
 typedef struct joins{
-    int pid_thread;
-    int pid_threadWaiting;
+    int pid_thread; //pid ta thread que esta bloqueada
+    int pid_threadBlocking; //pid da thread que está bloqueando a thread bloqueada
 } joint;
 
 typedef struct FPrio * PFILAPRIO;
@@ -103,5 +105,11 @@ int setRunningThreadPriority(int priority);
 * Remove a thread da fila running e roda novamente a chose
 */
 void finishThread();
+
+int blockedForThread(int tid);
+TCB_t * blockThread();
+int unblockThread(TCB_t * thread);
+int SearchThreadByTidFila2(PFILA2 fila, int tid);
+int RemoveThreadFila2(PFILA2 fila, int tid);
 
 #endif
