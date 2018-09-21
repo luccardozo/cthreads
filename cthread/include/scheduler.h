@@ -21,8 +21,8 @@ typedef struct FPrio {
 Estrutura para a fila de JOINS, para a função CJOINS
 */
 typedef struct joins{
-    int pid_thread; //pid ta thread que esta bloqueada
-    int pid_threadBlocking; //pid da thread que está bloqueando a thread bloqueada
+    int tid_blockedThread; //pid da thread que esta bloqueada
+    int tid_blockingThread; //pid da thread que está bloqueando a thread bloqueada
 } joint;
 
 typedef struct FPrio * PFILAPRIO;
@@ -105,11 +105,30 @@ int setRunningThreadPriority(int priority);
 * Remove a thread da fila running e roda novamente a chose
 */
 void finishThread();
-
+/*
+Cjoin
+*/
 int blockedForThread(int tid);
+/*
+* Tira a thread que está rodando (fila running) e coloca na fila de bloqueadas
+*/
 TCB_t * blockThread();
-int unblockThread(TCB_t * thread);
-int SearchThreadByTidFila2(PFILA2 fila, int tid);
-int RemoveThreadFila2(PFILA2 fila, int tid);
+
+/*
+* Tira a thread da fila de bloqueados e coloca na de aptos denovo
+*/
+void unblockThread(int tid_blockedThread);
+
+/*
+* Procura uma thread em uma fila normal
+*/
+int FindThreadByNormalFila(PFILA2 fila, int tid);
+
+/*
+* Varre a fila de espera procurando por alguma thread que esteja esperando a thread solicitada(parametro tid).
+* Retorna ERROR caso já tenha alguma thread esperando a thread solicitada
+* (Uma thread não pode ser aguardado por mais de duas threads).
+*/
+int isBlocker(int tid);
 
 #endif

@@ -268,19 +268,15 @@ void finishThread(){
         join = (joint*)GetAtIteratorFila2(filaJoints);
         if(join == NULL)
             break;
-        if(join->pid_threadBlocking == thread->tid){ //se a thread bloqueante é igual a que saiu
-            SearchThreadByTidFila2(blocked, join->pid_thread);
-            TCB_t * blockedThread = (TCB_t*)GetAtIteratorFila2(blocked);
-            DeleteAtIteratorFila2(blocked);
-            insertFilaPrioridades(blockedThread);//bota na fila de aptos denovo
+        if(join->tid_blockingThread == thread->tid){ //se a thread bloqueante é igual a que saiu
+            unblockThread(join->tid_blockedThread);
         }
     }while(NextFila2(filaJoints) == 0);
-/*Termino da verificação e tratamento de bloqueante^^^^ */
+/*Termino da verificação e tratamento de bloqueante*/
 
     AppendFila2(finished, thread); //Coloca a thread na fila de terminados
     chooseAndRunReadyThread(); //Executa uma nova thread.
 }
-
 int setRunningThreadPriority(int priority) {
     TCB_t * thread = getAndDeleteFirstFila(running); //Pega a thread da fila de execução
     if (thread == NULL) {
@@ -292,42 +288,27 @@ int setRunningThreadPriority(int priority) {
     }
 }
 int blockedForThread(int tid){
-    joint *join;//variavel para percorrer a fila de joins
-	//findWaiting(join, tid);
-    FirstFila2(filaJoints);
-    do {  //Varre a fila de espera procurando por alguma thread que esteja esperando a thread solicitada
-        join = (joint*)GetAtIteratorFila2(filaJoints);
-        if(join == NULL) 
-            break;
-        if(join->pid_threadBlocking == tid){ //Não podem haver duas threads esperando a mesma thread
-            return -1;
-            break;
+    if(!isBlocker(tid)){
+        TCB_t * blockedThread = blockThread();//bloqueia a thread
+        /*Alocamento da JOIN*/
+        joint *join = malloc(sizeof(joint));
+        join->tid_blockedThread = blockedThread->tid;
+        join->tid_blockingThread = tid;
+        AppendFila2(filaJoints, join); //Coloca na fila de espera
+
+        int protectContext = 1;//Variavel para proteger contexto
+        getcontext(&(blockedThread->context));//ponto de retorno qnd desbloqueada
+        if(protectContext == 1){
+            protectContext = 0;
+            chooseAndRunReadyThread(); //Executa uma nova thread.
         }
-    }while(NextFila2(filaJoints) == 0);
-	TCB_t * blockedThread = blockThread();//bloqueia a thread
-
-	/*Alocamento da JOIN*/
-	join = malloc(sizeof(joint));
-	join->pid_thread = blockedThread->tid;
-	join->pid_threadBlocking = tid;
-    //printf("Thread bloqueada tid = %d\nThread bloqueando = %d\n", join->pid_thread, join->pid_threadBlocking);
-	AppendFila2(filaJoints, join); //Coloca na fila de espera
-
-    /*Variavel para proteger contexto*/
-    int isCommingBack = 1;
-
-	getcontext(&(blockedThread->context));//ponto de retorno qnd desbloqueada
-
-    if(isCommingBack == 1){
-        isCommingBack = 0;
-        chooseAndRunReadyThread(); //Sorteia a proxima thread a ser executada
+        
+        return 0;
     }
-    return 0;
+    else
+        return -1;
 }
 
-/*
-Tira a thread que está rodando (fila running) e coloca na fila de bloqueadas
-*/
 TCB_t * blockThread(){
     TCB_t * thread = getAndDeleteFirstFila(running);
     thread->state = PROCST_BLOQ;
@@ -335,13 +316,15 @@ TCB_t * blockThread(){
     return thread; //Retorna a thread que foi bloqueada
 }
 
-int unblockThread(TCB_t * thread){
-  RemoveThreadFila2(blocked, thread->tid); //Remove a thread da fila de bloqueados
-  insertFilaPrioridades(thread); //Adiciona a thread à fila de aptos
-  return 0;
+void unblockThread(int tid_blockedThread){
+    FindThreadByNormalFila(blocked, tid_blockedThread);
+    TCB_t * blockedThread = (TCB_t*)GetAtIteratorFila2(blocked);
+    DeleteAtIteratorFila2(blocked);
+    blockedThread->state = PROCST_APTO;
+    insertFilaPrioridades(blockedThread);//bota na fila de aptos denovo
 }
-/*Procura uma thread em uma fila normal*/
-int SearchThreadByTidFila2(PFILA2 fila, int tid){
+
+int FindThreadByNormalFila(PFILA2 fila, int tid){
   TCB_t * itThread = NULL;
   if(FirstFila2(fila) != 0) return -1; //Posiciona-se no inicio da fila
   do {  //Varre a fila até o fim procurando pelo tid
@@ -355,43 +338,16 @@ int SearchThreadByTidFila2(PFILA2 fila, int tid){
   return -1;
 }
 
-int RemoveThreadFila2(PFILA2 fila, int tid){
-  if(SearchThreadByTidFila2(fila, tid) == -1) return -1;
-  if(DeleteAtIteratorFila2(fila) == -1) return -1;
-  return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-Varre a fila de espera procurando por alguma thread que esteja esperando a thread solicitada.
-Retorna ERROR caso já tenha alguma thread esperando a thread solicitada
-(Uma thread não pode ser aguardado por mais de duas threads).
-
-int findWaiting(joint *join, int tid){
+int isBlocker(int tid){
+    joint *join = malloc(sizeof(joint));;//variavel para percorrer a fila de joins
 	FirstFila2(filaJoints);//pega o começo da fila
 	do{
 		join = (joint*)GetAtIteratorFila2(filaJoints);
-		if(join == NULL)//fim da fila, e não encontrou
-			break;
-		if(join->pid_threadBlocking == tid){//só uma thread pode esperar
+		if(join == NULL)
+			return 0;
+		if(join->tid_blockingThread == tid){//só uma thread pode esperar
 			return -1;
-			break;		
 		}		
 	}while(NextFila2(filaJoints) == 0);
-}*/
+    return 0;
+}

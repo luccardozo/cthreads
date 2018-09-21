@@ -9,11 +9,13 @@ void function1();
 void function2();
 void function3();
 void function4();
+void function5();
 
 int thread1;
 int thread2;
 int thread3;
 int thread4;
+int thread5;
 
 int main(){
 
@@ -34,6 +36,8 @@ void function1(){
     thread2 = ccreate((void*)&function2, 0, FPRIO_PRIORITY_HIGH);
     thread3 = ccreate((void*)&function3, 0, FPRIO_PRIORITY_MEDIUM);
     thread4 = ccreate((void*)&function4, 0, FPRIO_PRIORITY_HIGH);
+    thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_MEDIUM);
+
 
     printf("Finalizada a função 1\n");   
 }
@@ -43,7 +47,9 @@ void function2(){
     printf("Agora que a thread3 terminou, vou finalizar!\n");
 }
 void function3(){
-    printf("\nSou a função3. Vou finalizar e liberar a 2\n");
+    printf("\nSou a função3.Mas antes preciso esperar a função 5\n");
+    cjoin(thread5);
+    printf("Estou finalizando e vou liberar a thread2!\n");
 }
 void function4(){
     printf("\nSou a função 4, e vou terminar quando a medium(3) terminar:\n");
@@ -51,4 +57,7 @@ void function4(){
     if(wait != 0){
         printf("OPS. Eu nao posso esperar pela thread3, já tem algum esperando por ela.\n");
     }
+}
+void function5(){
+    printf("\nSou a função 5, e vou finalizar!\n");
 }
