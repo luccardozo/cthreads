@@ -105,10 +105,12 @@ int setRunningThreadPriority(int priority);
 * Remove a thread da fila running e roda novamente a chose
 */
 void finishThread();
+
 /*
 Cjoin
 */
 int blockedForThread(int tid);
+
 /*
 * Tira a thread que está rodando (fila running) e coloca na fila de bloqueadas
 */
