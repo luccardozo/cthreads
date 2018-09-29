@@ -132,5 +132,9 @@ int FindThreadByNormalFila(PFILA2 fila, int tid);
 * (Uma thread não pode ser aguardado por mais de duas threads).
 */
 int isBlocker(int tid);
+/*
+* Veririfica se a thread esta em aptos ou blockeados
+*/
+int findThreadAptosBlockeds(int tid);
 
 #endif

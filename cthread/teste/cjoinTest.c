@@ -43,13 +43,16 @@ void function1(){
 }
 void function2(){
     printf("\nSou a função 2, e vou terminar quando a medium(3) terminar:\n");
+    if(cjoin(20)){
+        printf("\nFunção 2:Este tid não existe, não posso aguardar por ele\n");
+    }
     cjoin(thread3);
-    printf("Agora que a thread3 terminou, vou finalizar!\n");
+    printf("Função 2: Agora que a thread3 terminou, vou finalizar!\n");
 }
 void function3(){
     printf("\nSou a função3.Mas antes preciso esperar a função 5\n");
     cjoin(thread5);
-    printf("Estou finalizando e vou liberar a thread2!\n");
+    printf("Função 3: Estou finalizando e vou liberar a thread2!\n");
 }
 void function4(){
     printf("\nSou a função 4, e vou terminar quando a medium(3) terminar:\n");

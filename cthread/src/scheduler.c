@@ -135,7 +135,6 @@ void searchForThreadInside(PFILA2 fila, TCB_t ** thread, int tid) {
     while (GetAtIteratorFila2(fila) != NULL && (*thread)->tid != tid) {
         searchthread = (TCB_t*)GetAtIteratorFila2(fila);
         NextFila2(fila);
-
         if(searchthread->tid == tid){
             *thread = searchthread;
         }
@@ -288,7 +287,7 @@ int setRunningThreadPriority(int priority) {
     }
 }
 int blockedForThread(int tid){
-    if(!isBlocker(tid)){
+    if(!isBlocker(tid) && !findThreadAptosBlockeds(tid)){ //se ela n for bloequeante e existir
         TCB_t * blockedThread = blockThread();//bloqueia a thread
         /*Alocamento da JOIN*/
         joint *join = malloc(sizeof(joint));
@@ -350,4 +349,20 @@ int isBlocker(int tid){
 		}		
 	}while(NextFila2(filaJoints) == 0);
     return 0;
+}
+int findThreadAptosBlockeds(tid){
+    if(!FindThreadByNormalFila(filaPrioridades->high,tid)){
+        return 0;
+    }
+    if(!FindThreadByNormalFila(filaPrioridades->medium,tid)){
+        return 0;
+    }
+    if(!FindThreadByNormalFila(filaPrioridades->low,tid)){
+        return 0;
+    }
+    if(!FindThreadByNormalFila(blocked,tid)){
+        return 0;
+    }
+    return -1;
+
 }
